@@ -5,17 +5,33 @@ using UnityEngine.UI;
 
 public class LoadHandler : MonoBehaviour
 {
-    public Dropdown dropdown;
-    public Button button;
+    [SerializeField]
+    private Dropdown dropdown;
+    [SerializeField]
+    private Button loadButton;
+    [SerializeField]
+    private Button cancelButton;
+    [SerializeField]
     private GameObject[] cards;
 
     void Start()
     {
-        cards = GameObject.FindGameObjectsWithTag("Card");
+
     }
 
+    public void cancelClick()
+    {
+        StopAllCoroutines();
+        CoroutineExtension.routinesStopped();
+        foreach (GameObject card in cards)
+        {
+            var cd = card.GetComponent<CardDisplay>();
+            cd.StopAllCoroutines();
+        }
+        StartCoroutine(cancelActions());
+    }
 
-    public void Click()
+    public void loadClick()
     {
         int index = dropdown.value;
         switch (dropdown.options[index].text)
@@ -27,7 +43,7 @@ public class LoadHandler : MonoBehaviour
                 StartCoroutine(oneByOne());
                 break;
             case "When Image Ready":
-                whenImageReady();
+                StartCoroutine(whenImageReady());
                 break;
             default:
                 Debug.Log("Dropdown error!");
@@ -37,63 +53,104 @@ public class LoadHandler : MonoBehaviour
 
     IEnumerator allAtOnce()
     {
-        dropdown.interactable = false;
-        button.interactable = false;
+        lockUI();
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            StartCoroutine(cd.turnOff());
+            cd.turnOff().parallelCoroutinesGroup(this, "turnOff");
         }
+
+        while (CoroutineExtension.GroupProcessing("turnOff"))
+            yield return null;
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            yield return StartCoroutine(cd.GetTexture());
+            cd.setTexture().parallelCoroutinesGroup(this, "setTexture");
         }
+
+        while (CoroutineExtension.GroupProcessing("setTexture"))
+            yield return null;
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            StartCoroutine(cd.turnOn());
+            cd.turnOn().parallelCoroutinesGroup(this, "turnOn");
         }
 
-        dropdown.interactable = true;
-        button.interactable = true;
+        while (CoroutineExtension.GroupProcessing("turnOn"))
+            yield return null;
+
+        unlockUI();
     }
 
     IEnumerator oneByOne()
     {
-        dropdown.interactable = false;
-        button.interactable = false;
+        lockUI();
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            StartCoroutine(cd.turnOff());
+            cd.turnOff().parallelCoroutinesGroup(this, "turnOff");
         }
+
+        while (CoroutineExtension.GroupProcessing("turnOff"))
+            yield return null;
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            yield return StartCoroutine(cd.getCard());
+            yield return StartCoroutine(cd.setTexture());
+            yield return StartCoroutine(cd.turnOn());
         }
-        dropdown.interactable = true;
-        button.interactable = true;
+
+        unlockUI();
     }
 
-    void whenImageReady()
+    IEnumerator whenImageReady()
     {
-        dropdown.interactable = false;
-        button.interactable = false;
+        lockUI();
 
         foreach (GameObject card in cards)
         {
             var cd = card.GetComponent<CardDisplay>();
-            StartCoroutine(cd.getCard());
+            cd.getCard().parallelCoroutinesGroup(this, "imageReady");
         }
-        
+
+        while (CoroutineExtension.GroupProcessing("imageReady"))
+            yield return null;
+
+        unlockUI();
+    }
+
+    IEnumerator cancelActions()
+    {
+        cancelButton.interactable = false;
+        foreach (GameObject card in cards)
+        {
+            var cd = card.GetComponent<CardDisplay>();
+            cd.turnOff().parallelCoroutinesGroup(this, "cancel");
+        }
+
+        while (CoroutineExtension.GroupProcessing("cancel"))
+            yield return null;
+
         dropdown.interactable = true;
-        button.interactable = true;
+        loadButton.interactable = true;
+    }
+
+    void lockUI()
+    {
+        dropdown.interactable = false;
+        loadButton.interactable = false;
+        cancelButton.interactable = true;
+    }
+
+    void unlockUI()
+    {
+        dropdown.interactable = true;
+        loadButton.interactable = true;
+        cancelButton.interactable = false;
     }
 }

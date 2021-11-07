@@ -7,17 +7,21 @@ using DG.Tweening;
 
 public class CardDisplay : MonoBehaviour
 {
-    public GameObject artworkImage;
-    public GameObject cardFace;
-    public GameObject cardBack;
-    public float duration;
-    private Sequence s;
+    [SerializeField]
+    private GameObject artworkImage;
+    [SerializeField]
+    private GameObject cardFace;
+    [SerializeField]
+    private GameObject cardBack;
+    [SerializeField]
+    private float duration;
+    [SerializeField]
     private bool turned;
 
     // Start is called before the first frame update
     void Start()
     {
-        turned = false;
+
     }
 
     // Update is called once per frame
@@ -29,21 +33,28 @@ public class CardDisplay : MonoBehaviour
     public IEnumerator getCard()
     {
         yield return StartCoroutine(turnOff());
-        yield return StartCoroutine(GetTexture());
+        yield return StartCoroutine(setTexture());
         yield return StartCoroutine(turnOn());
+    }
+
+    public void turnOnCo()
+    {
+        StartCoroutine(turnOn());
     }
 
     public IEnumerator turnOn()
     {
         if (!turned)
         {
+            turned = true;
+
             Tween myTween = cardBack.transform.DORotate(new Vector3(0, 90, 0), duration);
+            cardBack.transform.DOScale(new Vector3(1.5f, 1.5f, 1), duration);
             yield return myTween.WaitForCompletion();
 
             myTween = cardFace.transform.DORotate(new Vector3(0, 0, 0), duration);
+            cardFace.transform.DOScale(new Vector3(1, 1, 1), duration);
             yield return myTween.WaitForCompletion();
-
-            turned = true;
         }
     }
 
@@ -51,17 +62,19 @@ public class CardDisplay : MonoBehaviour
     {
         if (turned)
         {
+            turned = false;
+
             Tween myTween = cardFace.transform.DORotate(new Vector3(0, 90, 0), duration);
+            cardFace.transform.DOScale(new Vector3(1.5f, 1.5f, 1), duration);
             yield return myTween.WaitForCompletion();
 
             myTween = cardBack.transform.DORotate(new Vector3(0, 0, 0), duration);
+            cardBack.transform.DOScale(new Vector3(1, 1, 1), duration);
             yield return myTween.WaitForCompletion();
-
-            turned = false;
         }
     }
 
-    public IEnumerator GetTexture()
+    public IEnumerator setTexture()
     {
         float imWidth = artworkImage.GetComponent<RectTransform>().rect.width;
         float imHeight = artworkImage.GetComponent<RectTransform>().rect.height;
