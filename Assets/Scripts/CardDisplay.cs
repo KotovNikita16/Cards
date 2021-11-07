@@ -17,32 +17,19 @@ public class CardDisplay : MonoBehaviour
     private float duration;
     [SerializeField]
     private bool turned;
+    private const string downloadUrl = "https://picsum.photos/seed/";
 
-    // Start is called before the first frame update
     void Start()
     {
-
+        Croupier.AddCard(this);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnDestroy()
     {
-
+        Croupier.RemoveCard(this);
     }
 
-    public IEnumerator getCard()
-    {
-        yield return StartCoroutine(turnOff());
-        yield return StartCoroutine(setTexture());
-        yield return StartCoroutine(turnOn());
-    }
-
-    public void turnOnCo()
-    {
-        StartCoroutine(turnOn());
-    }
-
-    public IEnumerator turnOn()
+    public IEnumerator TurnOn()
     {
         if (!turned)
         {
@@ -56,9 +43,10 @@ public class CardDisplay : MonoBehaviour
             cardFace.transform.DOScale(new Vector3(1, 1, 1), duration);
             yield return myTween.WaitForCompletion();
         }
+        Croupier.CardIsTurnedOn();
     }
 
-    public IEnumerator turnOff()
+    public IEnumerator TurnOff()
     {
         if (turned)
         {
@@ -72,13 +60,15 @@ public class CardDisplay : MonoBehaviour
             cardBack.transform.DOScale(new Vector3(1, 1, 1), duration);
             yield return myTween.WaitForCompletion();
         }
+        Croupier.CardIsTurnedOff();
     }
 
-    public IEnumerator setTexture()
+    public IEnumerator SetTexture()
     {
         float imWidth = artworkImage.GetComponent<RectTransform>().rect.width;
         float imHeight = artworkImage.GetComponent<RectTransform>().rect.height;
-        UnityWebRequest www = UnityWebRequestTexture.GetTexture("https://picsum.photos/seed/" + Random.Range(0, 1000) + "/" + imWidth + "/" + imHeight);
+        int seed = Random.Range(0, 1000);
+        UnityWebRequest www = UnityWebRequestTexture.GetTexture($"{downloadUrl}{seed}/{imWidth}/{imHeight}");
         yield return www.SendWebRequest();
 
         if (www.result != UnityWebRequest.Result.Success)
@@ -89,6 +79,7 @@ public class CardDisplay : MonoBehaviour
         {
             Texture tex = ((DownloadHandlerTexture)www.downloadHandler).texture;
             artworkImage.GetComponent<Image>().sprite = Sprite.Create(tex as Texture2D, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+            Croupier.TextureLoaded(this);
         }
     }
 }

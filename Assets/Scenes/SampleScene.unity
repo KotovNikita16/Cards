@@ -680,7 +680,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1371382632}
         m_TargetAssemblyTypeName: LoadHandler, Assembly-CSharp
-        m_MethodName: cancelClick
+        m_MethodName: CancelClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2914,7 +2914,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1371382632}
         m_TargetAssemblyTypeName: LoadHandler, Assembly-CSharp
-        m_MethodName: loadClick
+        m_MethodName: LoadClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2977,13 +2977,6 @@ MonoBehaviour:
   dropdown: {fileID: 1700626281}
   loadButton: {fileID: 1371382629}
   cancelButton: {fileID: 357226132}
-  cards:
-  - {fileID: 544503668}
-  - {fileID: 843907382}
-  - {fileID: 565929164}
-  - {fileID: 1978907054}
-  - {fileID: 1840315542}
-  - {fileID: 710682734}
 --- !u!1 &1419376852
 GameObject:
   m_ObjectHideFlags: 0
